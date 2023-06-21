@@ -1,4 +1,26 @@
-﻿Add-Type -TypeDefinition @"
+﻿# Create the WMD folder if it doesn't exist
+$destinationPath = "C:\ProgramData\WMD"
+if (!(Test-Path -Path $destinationPath)) {
+    New-Item -ItemType Directory -Path $destinationPath
+}
+
+# Copy all files and folders in the script's directory to the WMD folder
+$scriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Path
+Get-ChildItem -Path $scriptDirectory -Recurse | ForEach-Object {
+    $destinationFile = Join-Path -Path $destinationPath -ChildPath $_.FullName.Substring($scriptDirectory.length)
+    if (!(Test-Path -Path (Split-Path -Path $destinationFile -Parent))) {
+        New-Item -ItemType Directory -Path (Split-Path -Path $destinationFile -Parent)
+    }
+    Copy-Item -Path $_.FullName -Destination $destinationFile
+}
+
+# Create a new task in the Task Scheduler to run a bat file called RunLater.bat
+$action = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$destinationPath\RunLater.bat`"" -WorkingDirectory $destinationPath
+$trigger = New-ScheduledTaskTrigger -Daily -At 2pm
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "MyTask" -Description "Runs my script daily at 9 AM"
+
+# The rest of the script remains the same
+Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
 
@@ -26,7 +48,7 @@ $outlook = New-Object -ComObject Outlook.Application
 $mail = $outlook.CreateItem(0)
 
 # Set properties of the Mail Item
-$mail.To = "ktischler@global-business.net; lprevost@global-business.net; kwright@global-business.net; jfrancoeur@global-business.net; bmedcalf@global-business.net; ncasey@global-business.net; kmeade@global-business.net; pfuller@global-business.net; rrobertson@global-business.net ;de.robertson@global-business.net"#"bmedcalf@global-business.net"
+$mail.To = "pfuller@global-business.net"#"ktischler@global-business.net; lprevost@global-business.net; kwright@global-business.net; jfrancoeur@global-business.net; bmedcalf@global-business.net; ncasey@global-business.net; kmeade@global-business.net; pfuller@global-business.net; rrobertson@global-business.net ;de.robertson@global-business.net"#"bmedcalf@global-business.net"
 $mail.Subject = "Keep Your Computer Locked"
 $mail.Body = Get-Content ".\TheGreatestIntern.txt"
 
