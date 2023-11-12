@@ -48,7 +48,7 @@ $outlook = New-Object -ComObject Outlook.Application
 $mail = $outlook.CreateItem(0)
 
 # Set properties of the Mail Item
-$mail.To = "pfuller@global-business.net"#"ktischler@global-business.net; lprevost@global-business.net; kwright@global-business.net; jfrancoeur@global-business.net; bmedcalf@global-business.net; ncasey@global-business.net; kmeade@global-business.net; pfuller@global-business.net; rrobertson@global-business.net ;de.robertson@global-business.net"#"bmedcalf@global-business.net"
+$mail.To = ""
 $mail.Subject = "Keep Your Computer Locked"
 $mail.Body = Get-Content ".\TheGreatestIntern.txt"
 
